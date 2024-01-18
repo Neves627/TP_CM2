@@ -159,61 +159,96 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
 void _showEditUserPopup(BuildContext context, User user) {
-    String inome = user.nome;
-    String iemail = user.email;
+  String inome = user.nome;
+  String iemail = user.email;
+
+  // Regular expression for a valid email format
+  final emailRegex = RegExp(
+    r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
+  );
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Editar Informações do Utilizador'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              initialValue: user.nome,
+              decoration: const InputDecoration(labelText: 'Nome'),
+              onChanged: (value) {
+                user.nome = value;
+              },
+            ),
+            TextFormField(
+              initialValue: user.email,
+              decoration: const InputDecoration(labelText: 'Email'),
+              onChanged: (value) {
+                if (emailRegex.hasMatch(value)) {
+                  // Valid email format
+                  user.email = value;
+                } else {
+                  // Invalid email format
+                  // You can show an error message or disable the "Salvar" button
+                }
+              },
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              if (emailRegex.hasMatch(user.email)) {
+                // Valid email format, proceed with saving changes
+                await updateUserInCollection(user.id, user.nome, user.email);
+
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return UserProfilePage(userId: user.id);
+                  }),
+                );
+              } else {
+                _showPopupemail(context);
+                print('Invalid email format');
+              }
+            },
+            child: Text('Salvar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+ void _showPopupemail(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Editar Informações do Utilizador'),
-          
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                initialValue: user.nome,
-                decoration: const InputDecoration(labelText: 'Nome'),
-                onChanged: (value) {
-                  user.nome = value;
-                },
-              ),
-              TextFormField(
-                initialValue: user.email,
-                
-                decoration: const InputDecoration(labelText: 'Email'),
-                onChanged: (value) {
-                  user.email = value;
-                },
-              ),
-            ],
-          ),
+          title: const Text('Erro no Email'),
+          content: const Text('Formato de email invalido'),
           actions: <Widget>[
             TextButton(
-                  onPressed: () async {
-                   
-                    await updateUserInCollection(user.id, user.nome, user.email);
-
-                    Navigator.of(context).pop();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return UserProfilePage(userId: user.id);
-                      }),
-                    );
-                  },
-                  child: Text('Salvar'),
-                ),
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: const Text('OK'),
+            ),
           ],
         );
       },
     );
   }
 
-
 void _showEditOppPopup(BuildContext context, User user, String userId) async {
   String ilane = user.lane;
   List<Team> teams = await getAllTeams(); // Fetch teams
 
+  // ignore: use_build_context_synchronously
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -280,6 +315,13 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
+                
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return UserProfilePage(userId: user.id);
+                  }),
+                );
                 },
                 child: const Text('Salvar'),
               ),
