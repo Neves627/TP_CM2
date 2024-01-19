@@ -2,10 +2,8 @@ import 'package:aplicacao/screens/widgets/customdrawer.dart';
 import 'package:aplicacao/screens/data/user.dart';
 import 'package:flutter/material.dart';
 
-
 class AdminProfilePage extends StatefulWidget {
   final String userId;
-  
 
   AdminProfilePage({required this.userId});
 
@@ -14,24 +12,16 @@ class AdminProfilePage extends StatefulWidget {
 }
 
 class _AdminProfilePageState extends State<AdminProfilePage> {
-  late Future<User?> userInfo;
   late User? adminUserData;
 
   @override
   void initState() {
     super.initState();
-    userInfo = getUser();
-    // Use widget.userId to access the userId property of the widget
     getUserData(widget.userId).then((user) {
       setState(() {
         adminUserData = user;
       });
     });
-  }
-
-  Future<User?> getUser() async {
-    User? userData = await getUserData(widget.userId);
-    return userData;
   }
 
   @override
@@ -53,7 +43,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           ),
           ElevatedButton(
             onPressed: () {
-             //_showRemoveTeamConfirmation(context);
+              //_showRemoveTeamConfirmation(context);
             },
             style: ElevatedButton.styleFrom(
               primary: Colors.red,
@@ -64,13 +54,13 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       ),
       drawer: const CustomDrawer(),
       body: FutureBuilder<User?>(
-        future: userInfo,
+        future: getUserData(widget.userId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError || !snapshot.hasData) {
+          } else if (snapshot.hasError || snapshot.data == null) {
             return Center(
               child: Text('Error loading admin data.'),
             );
@@ -109,6 +99,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                               ),
                               const SizedBox(height: 10.0),
                               Text('Nome: ${admin.nome}'),
+                              Text('Email: ${admin.email}'),
                             ],
                           ),
                         ),
@@ -129,16 +120,11 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                               const SizedBox(height: 10.0),
-                              ListView.builder(
-                                shrinkWrap: true,
-                                //itemCount: userList.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text('Nome: ${adminUserData!.nome}'),
-                                    subtitle: Text('Email: ${adminUserData!.email}'),
-                                  );
-                                },
-                              ),
+                              // Use adminUserData instead of snapshot.data
+                              //ListTile(
+                               // title: Text('Nome: ${adminUserData!.nome}'),
+                              //  subtitle: Text('Email: ${adminUserData!.email}'),
+                              //),
                             ],
                           ),
                         ),
@@ -158,15 +144,15 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                               const SizedBox(height: 10.0),
-                              ListView.builder(
-                                shrinkWrap: true,
+                             // ListView.builder(
+                               // shrinkWrap: true,
                                 //itemCount: teams.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
+                               // itemBuilder: (context, index) {
+                               //   return ListTile(
                                     //title: Text('Nome: ${teams[index].name}'),
-                                  );
-                                },
-                              ),
+                                 // );
+                               //},
+                              //),
                             ],
                           ),
                         ),

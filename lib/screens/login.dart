@@ -123,18 +123,16 @@ class LoginPage extends StatelessWidget {
                               }
 
                               try {
-                                String? userId = await auth.checkUidInCollection();
-                                
-          
+
                                 await auth.signInWithEmailAndPassword(
                                   email: email,
                                   password: password,
                                 );
-
+                                String? userId = await auth.checkUidInCollection();
                                 if (userId != null) {
                                   int? adminField = await getadm(userId);
-                                  print(adminField);
                                   if (adminField == 0) {
+                                    // ignore: use_build_context_synchronously
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -142,6 +140,7 @@ class LoginPage extends StatelessWidget {
                                       ),
                                     );
                                   } else if (adminField == 1) {
+                                    // ignore: use_build_context_synchronously
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
