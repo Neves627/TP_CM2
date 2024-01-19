@@ -3,23 +3,48 @@ import 'package:aplicacao/screens/data/user.dart';
 import 'package:flutter/material.dart';
 
 
-/*
-class AdminProfilePage extends StatelessWidget {
-  final List<User> userList;
+class AdminProfilePage extends StatefulWidget {
+  final String userId;
+  
 
-   AdminProfilePage({required this.userList});
+  AdminProfilePage({required this.userId});
+
+  @override
+  _AdminProfilePageState createState() => _AdminProfilePageState();
+}
+
+class _AdminProfilePageState extends State<AdminProfilePage> {
+  late Future<User?> userInfo;
+  late User? adminUserData;
+
+  @override
+  void initState() {
+    super.initState();
+    userInfo = getUser();
+    // Use widget.userId to access the userId property of the widget
+    getUserData(widget.userId).then((user) {
+      setState(() {
+        adminUserData = user;
+      });
+    });
+  }
+
+  Future<User?> getUser() async {
+    User? userData = await getUserData(widget.userId);
+    return userData;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       backgroundColor: const Color.fromARGB(255, 28, 28, 28),
+      backgroundColor: const Color.fromARGB(255, 28, 28, 28),
       appBar: AppBar(
         title: const Text('Perfil do Administrador'),
         backgroundColor: const Color.fromARGB(255, 25, 25, 25),
         actions: [
           ElevatedButton(
             onPressed: () {
-              _showRemoveUserConfirmation(context);
+              //_showRemoveUserConfirmation(context);
             },
             style: ElevatedButton.styleFrom(
               primary: Colors.red,
@@ -28,7 +53,7 @@ class AdminProfilePage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              _showRemoveTeamConfirmation(context);
+             //_showRemoveTeamConfirmation(context);
             },
             style: ElevatedButton.styleFrom(
               primary: Colors.red,
@@ -38,113 +63,126 @@ class AdminProfilePage extends StatelessWidget {
         ],
       ),
       drawer: const CustomDrawer(),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromARGB(255, 28, 28, 28),
-                Color.fromARGB(255, 79, 77, 77),
-              ],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                
-                Card(
-                  elevation: 5.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Informações do Administrador',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 10.0),
-                        Text('Nome: ${userList[0].nome}'),
-                      ],
-                    ),
+      body: FutureBuilder<User?>(
+        future: userInfo,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError || !snapshot.hasData) {
+            return Center(
+              child: Text('Error loading admin data.'),
+            );
+          } else {
+            User admin = snapshot.data!;
+            return SingleChildScrollView(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color.fromARGB(255, 28, 28, 28),
+                      Color.fromARGB(255, 79, 77, 77),
+                    ],
                   ),
                 ),
-                SizedBox(height: 20.0),
-
-                
-                Card(
-                  elevation: 5.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Lista de Usuários',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Card(
+                        elevation: 5.0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Informações do Administrador',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10.0),
+                              Text('Nome: ${admin.nome}'),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10.0),
-                        
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: userList.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text('Nome: ${userList[index].nome}'),
-                              subtitle: Text('Email: ${userList[index].email}'),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  elevation: 5.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Lista de Equipas',
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
+                      ),
+                      SizedBox(height: 20.0),
+                      Card(
+                        elevation: 5.0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Lista de Usuários',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10.0),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                //itemCount: userList.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title: Text('Nome: ${adminUserData!.nome}'),
+                                    subtitle: Text('Email: ${adminUserData!.email}'),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 10.0),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: teams.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text('Nome: ${teams[index].name}'),
-                            );
-                          },
+                      ),
+                      Card(
+                        elevation: 5.0,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Lista de Equipas',
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 10.0),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                //itemCount: teams.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    //title: Text('Nome: ${teams[index].name}'),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            );
+          }
+        },
       ),
     );
   }
 
+/*
   void _showRemoveUserConfirmation(BuildContext context) {
   String userEmail = ''; 
 
@@ -302,8 +340,10 @@ void _removeTeam(BuildContext context, String teamName) {
     );
   }
 }
-}
 */
+}
+
+
 
 
 

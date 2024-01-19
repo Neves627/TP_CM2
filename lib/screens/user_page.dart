@@ -1,5 +1,6 @@
 import 'package:aplicacao/screens/data/teams.dart';
 import 'package:aplicacao/screens/data/user.dart';
+import 'package:aplicacao/screens/registro.dart';
 import 'package:flutter/material.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -40,21 +41,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
               setState(() {
                 userinfo = Future.value(updatedUserData);
               });
-              // confirmação do delete;
+             _showDeleteConfirmation(context, userinfo, widget.userId);
             },
             style: ElevatedButton.styleFrom(primary: Colors.red),
             child: Text('Apagar Conta'),
           ),
           ElevatedButton(
             onPressed: () {
-              //showcreateteam;
+              _showCreateTeam(context);
             },
             style: ElevatedButton.styleFrom(primary: Colors.green),
             child: Text('Criar Equipa'),
           ),
         ],
       ),
-      // ... rest of your code
       body: FutureBuilder<User?>(
         future: userinfo,
         builder: (context, snapshot) {
@@ -333,10 +333,14 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
   );
 }
 
+void _showDeleteConfirmation(BuildContext context, Future<User?> userFuture, String userId) async {
+  // Fetch the user data
+  User? user = await userFuture;
 
-/*
-  void _showDeleteConfirmation(BuildContext context, User user) {
-    showDialog(
+  // Check if user is not null
+  if (user != null) {
+    // ignore: use_build_context_synchronously
+    bool deleteConfirmed = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -345,22 +349,19 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(false); // Cancel the delete operation
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                User.deleteUser(users, user);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                 
-                                  return const MyStatefulWidget();
-                                }),
-                              );
+              onPressed: () async {
+                // Step 1: Delete User Data in the Database
+                await deleteUserInDatabase(userId);  // Use the provided userId parameter
+
+                // Step 2: Delete User Authentication Account
+                await deleteUserAuthentication(user.email);
+
+                Navigator.of(context).pop(true); // Confirm the delete operation
               },
               style: TextButton.styleFrom(
                 primary: Colors.red,
@@ -371,10 +372,44 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
         );
       },
     );
-  }
-  */
 
-  /*
+    // Check if the user confirmed the delete operation
+    if (deleteConfirmed == true) {
+      // Close the current screen and navigate to the desired screen
+      Navigator.of(context).pop(); // Close current screen
+
+      // Navigate to the desired screen, replace 'MyStatefulWidget' with the actual class name
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return RegisterPage();
+        }),
+      );
+    }
+  }
+}
+
+
+  Future<void> _createTeam(BuildContext context, String teamName) async {
+  try {
+    await createTeam(teamName);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Equipa criada com sucesso!'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Erro ao criar a equipa'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
    void _showCreateTeam(BuildContext context) {
       String teamName = '';
 
@@ -418,33 +453,5 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
         },
       );
 }
-*/
-
-/*
-void _createTeam(BuildContext context, String teamName) {
-  try {
-    
-    Team newTeam = Team(name: teamName);
-
-  
-    teams.add(newTeam);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Equipa criada com sucesso!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  } catch (e) {
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Erro ao criar a equipa'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-}
-*/
 }
 

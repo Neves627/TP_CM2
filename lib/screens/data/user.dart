@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 class User {
   String id;
@@ -58,6 +59,11 @@ Future<void> updateUserInCollection(String userId, String newName, String newEma
     if (userQuerySnapshot.docs.isNotEmpty) {
       // Document exists, proceed with the update
       QueryDocumentSnapshot userDocSnapshot = userQuerySnapshot.docs.first;
+
+      // Update Firebase Authentication email
+      await updateFirebaseAuthEmail(userId, newEmail);
+
+      // Update Firestore document
       await users.doc(userDocSnapshot.id).update({
         'nome': newName,
         'email': newEmail,
@@ -73,6 +79,20 @@ Future<void> updateUserInCollection(String userId, String newName, String newEma
   }
 }
 
+Future<void> updateFirebaseAuthEmail(String userId, String newEmail) async {
+  try {
+    firebase_auth.User? currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
+
+    if (currentUser != null && currentUser.uid == userId) {
+      await currentUser.updateEmail(newEmail);
+      print("Firebase Authentication: Email updated successfully");
+    } else {
+      print("Firebase Authentication: User not found or UID does not match");
+    }
+  } catch (e) {
+    print("Error updating Firebase Authentication email: $e");
+  }
+}
 
 Future<User?> getUserData(String userId) async {
   try {
@@ -163,3 +183,33 @@ Future<void> updateUserLane(String userId, String newLane) async {
     print('Error updating user lane: $e');
   }
 }
+
+Future<int?> getadm(String userId) async {
+  try {
+    print('Fetching adm for userId: $userId');
+
+    // Firestore query to get user data
+    QuerySnapshot userQuerySnapshot = await FirebaseFirestore.instance
+        .collection('Users')
+        .where('id', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    // Check if any documents were found
+    if (userQuerySnapshot.docs.isNotEmpty) {
+      // Take the first document in the query result
+      QueryDocumentSnapshot userDocumentSnapshot = userQuerySnapshot.docs.first;
+
+      // Directly return the adm field as an int
+      return userDocumentSnapshot['adm'] as int?;
+    } else {
+      print('User with ID $userId not found in Firestore.');
+      return null;
+    }
+  } catch (e) {
+    // Print or log the error
+    print('Error fetching adm data: $e');
+    return null;
+  }
+}
+

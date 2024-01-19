@@ -1,3 +1,4 @@
+import 'package:aplicacao/screens/data/user.dart';
 import 'package:aplicacao/screens/registro.dart';
 import 'package:aplicacao/screens/user_page.dart';
 import 'package:aplicacao/screens/useradmin_page.dart';
@@ -123,19 +124,32 @@ class LoginPage extends StatelessWidget {
 
                               try {
                                 String? userId = await auth.checkUidInCollection();
+                                
+          
                                 await auth.signInWithEmailAndPassword(
                                   email: email,
                                   password: password,
-                                
                                 );
-                                 
-                                // ignore: use_build_context_synchronously
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => UserProfilePage(userId: userId ?? ''),
-                                  ),
-                                );
+
+                                if (userId != null) {
+                                  int? adminField = await getadm(userId);
+                                  print(adminField);
+                                  if (adminField == 0) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => UserProfilePage(userId: userId),
+                                      ),
+                                    );
+                                  } else if (adminField == 1) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AdminProfilePage(userId: userId),
+                                      ),
+                                    );
+                                  }
+                                }
                                 print("Sucesso");
                                 auth.checkUidInCollection();
                                 // Successful login
