@@ -1,3 +1,4 @@
+import 'package:aplicacao/screens/data/teams.dart';
 import 'package:aplicacao/screens/widgets/customdrawer.dart';
 import 'package:aplicacao/screens/data/user.dart';
 import 'package:flutter/material.dart';
@@ -8,18 +9,28 @@ class AdminProfilePage extends StatefulWidget {
   AdminProfilePage({required this.userId});
 
   @override
-  _AdminProfilePageState createState() => _AdminProfilePageState();
+  _AdminProfilePageState createState() => _AdminProfilePageState(userId: userId);
 }
 
 class _AdminProfilePageState extends State<AdminProfilePage> {
   late User? adminUserData;
+  late List<Team> teams;
+  final String userId;
+  
 
+   _AdminProfilePageState({required this.userId});
   @override
   void initState() {
     super.initState();
     getUserData(widget.userId).then((user) {
       setState(() {
         adminUserData = user;
+      });
+    });
+
+    getAllTeams().then((allTeams) {
+      setState(() {
+        teams = allTeams;
       });
     });
   }
@@ -34,7 +45,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         actions: [
           ElevatedButton(
             onPressed: () {
-              //_showRemoveUserConfirmation(context);
+              _showRemoveUserConfirmation(context);
             },
             style: ElevatedButton.styleFrom(
               primary: Colors.red,
@@ -43,7 +54,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              //_showRemoveTeamConfirmation(context);
+              _showRemoveTeamConfirmation(context);
             },
             style: ElevatedButton.styleFrom(
               primary: Colors.red,
@@ -104,31 +115,49 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 20.0),
-                      Card(
-                        elevation: 5.0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Lista de Usuários',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
+                      const SizedBox(height: 20.0),
+                       Card(
+                          elevation: 5.0,
+                          child: Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Lista de Usuários',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10.0),
-                              // Use adminUserData instead of snapshot.data
-                              //ListTile(
-                               // title: Text('Nome: ${adminUserData!.nome}'),
-                              //  subtitle: Text('Email: ${adminUserData!.email}'),
-                              //),
-                            ],
+                                SizedBox(height: 10.0),
+                                FutureBuilder<List<String>>(
+                                  future: getAllUserNames(),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return CircularProgressIndicator();
+                                    } else if (snapshot.hasError) {
+                                      return Text('Error loading user names: ${snapshot.error}');
+                                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                      return Text('No users found.');
+                                    } else {
+                                      // Use ListView.builder to display the list of user names
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: snapshot.data!.length,
+                                        itemBuilder: (context, index) {
+                                          return ListTile(
+                                            title: Text('Nome: ${snapshot.data![index]}'),
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                       Card(
                         elevation: 5.0,
                         child: Padding(
@@ -144,15 +173,15 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                 ),
                               ),
                               const SizedBox(height: 10.0),
-                             // ListView.builder(
-                               // shrinkWrap: true,
-                                //itemCount: teams.length,
-                               // itemBuilder: (context, index) {
-                               //   return ListTile(
-                                    //title: Text('Nome: ${teams[index].name}'),
-                                 // );
-                               //},
-                              //),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: teams.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title: Text('Nome: ${teams[index].name}'),
+                                  );
+                                },
+                              )
                             ],
                           ),
                         ),
@@ -168,7 +197,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     );
   }
 
-/*
+
   void _showRemoveUserConfirmation(BuildContext context) {
   String userEmail = ''; 
 
@@ -205,7 +234,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 context,
                 MaterialPageRoute(builder: (context) {
                                     
-                 return AdminProfilePage(userList: users);
+                 return AdminProfilePage(userId: userId);
                  }),
                  );
                               
@@ -221,31 +250,64 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   );
 }
 
-//Para remover um utilizador
-void _removeUser(BuildContext context, String userEmail) {
+void _removeUser(BuildContext context, String userEmail) async {
   try {
-   
-    User userToRemove = users.firstWhere((user) => user.email == userEmail);
+    // Get all users from the database
+    List<User>? allUsers = await getAllUsers();
 
-    
-    users.remove(userToRemove);
+    if (allUsers != null) {
+      // Retrieve the user to be removed from Firestore
+      User? userToRemove = allUsers.firstWhere(
+        (user) => user.email == userEmail,
+      );
 
-    
-    Navigator.of(context).pop(); 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Usuário removido com sucesso!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+      if (userToRemove != null) {
+        // Delete the user from Firestore
+        await deleteUserInDatabase(userToRemove.id);
+
+        // Delete the user authentication account
+        await removeAuthenticationByEmail(userEmail);
+
+        // Show a snackbar indicating success
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Usuário removido com sucesso!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Push a new instance of AdminProfilePage to refresh the page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminProfilePage(userId: userId),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Usuário não encontrado'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      // Handle the case when fetching all users returns null
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao pesquisar pelo usuário'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   } catch (e) {
-    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Usuário não encontrado'),
+        content: Text('Erro ao remover usuário'),
         duration: Duration(seconds: 2),
       ),
     );
+    print('Error removing user: $e');
   }
 }
 
@@ -279,15 +341,14 @@ void _removeUser(BuildContext context, String userEmail) {
           ),
           TextButton(
             onPressed: () {
-              _removeTeam(context, teamName);
+              removeTeam(teamName);
               Navigator.of(context).pop(); 
                Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) {
-                                    
-                 return AdminProfilePage(userList: users);
-                 }),
-                 );
+                  return AdminProfilePage(userId: userId);
+                }),
+              );
             },
             style: TextButton.styleFrom(
               primary: Colors.red,
@@ -326,7 +387,6 @@ void _removeTeam(BuildContext context, String teamName) {
     );
   }
 }
-*/
 }
 
 

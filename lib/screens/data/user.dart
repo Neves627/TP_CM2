@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class User {
   String id;
@@ -212,4 +213,69 @@ Future<int?> getadm(String userId) async {
     return null;
   }
 }
+Future<void> removeTeam(String teamName) async {
+  try {
+    // Remove the team from the "Teams" collection
+    await FirebaseFirestore.instance.collection('Teams').where('nome', isEqualTo: teamName).get().then((querySnapshot) {
+      querySnapshot.docs.forEach((teamDoc) async {
+        // Delete the team document
+        await teamDoc.reference.delete();
+        print('Team $teamName removed from the "Teams" collection');
+      });
+    });
+
+    // Update the "equipa" field in the "Users" collection for users with the removed team
+    await FirebaseFirestore.instance.collection('Users').where('equipa', isEqualTo: teamName).get().then((querySnapshot) {
+      querySnapshot.docs.forEach((userDoc) async {
+        // Update the 'equipa' field to an empty string
+        await userDoc.reference.update({'equipa': ''});
+        print('User ${userDoc.id} updated: equipa set to empty');
+      });
+    });
+
+    print('Team removal process completed successfully.');
+  } catch (e) {
+    print('Error removing team: $e');
+  }
+}
+
+Future<List<String>> getAllUserNames() async {
+  try {
+    // Firestore query to get all user data
+    QuerySnapshot userQuerySnapshot = await FirebaseFirestore.instance.collection('Users').get();
+
+    // Check if any documents were found
+    if (userQuerySnapshot.docs.isNotEmpty) {
+      // Map the query result to a list of user names
+      List<String> userNames = userQuerySnapshot.docs.map((userDoc) {
+        return userDoc['nome'] as String? ?? ''; // Using 'nome' as the field, update it if needed
+      }).toList();
+
+      return userNames;
+    } else {
+      print('No users found in Firestore.');
+      return [];
+    }
+  } catch (e) {
+    // Print or log the error
+    print('Error fetching user names: $e');
+    return [];
+  }
+}
+
+Future<List<User>> getAllUsers() async {
+  try {
+    // Firestore query to get all users
+    QuerySnapshot userQuerySnapshot = await FirebaseFirestore.instance.collection('Users').get();
+
+    // Map each document snapshot to a User object and return a list of users
+    List<User> users = userQuerySnapshot.docs.map((doc) => User.fromSnapshot(doc)).toList();
+
+    return users; // Return the list of users
+  } catch (e) {
+    print('Error fetching all users: $e');
+    return []; // Return an empty list in case of an error
+  }
+}
+
 

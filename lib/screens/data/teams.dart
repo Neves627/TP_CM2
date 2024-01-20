@@ -96,7 +96,6 @@ Future<void> deleteUserAuthentication(String userEmail) async {
   try {
     // Get the current authenticated user
     User? user = FirebaseAuth.instance.currentUser;
-
     if (user != null && user.email == userEmail) {
       // User is authenticated, delete the account
       await user.delete();
@@ -105,5 +104,37 @@ Future<void> deleteUserAuthentication(String userEmail) async {
     }
   } catch (e) {
     print('Error deleting user authentication account: $e');
+  }
+}
+
+Future<void> removeAuthenticationByEmail(String userEmail) async {
+  try {
+    print("asndakjsdnakjsdnjaksndkja $userEmail");
+
+    // Check if there are sign-in methods for the email
+    List<String> methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(userEmail);
+
+    if (methods.isNotEmpty) {
+      // Sign in with the email (using a dummy password)
+      UserCredential authResult = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: userEmail,
+        password: '123123', // Provide a valid password
+      );
+
+      // Get the user object
+      User? user = authResult.user;
+
+      if (user != null) {
+        // User with specified email found, delete the account
+        await user.delete();
+        print('Authentication removed for user with email: $userEmail');
+      } else {
+        print('Error: User with email $userEmail not found.');
+      }
+    } else {
+      print('Error: User with email $userEmail not found.');
+    }
+  } catch (e) {
+    print('Error removing user authentication by email: $e');
   }
 }
