@@ -278,4 +278,19 @@ Future<List<User>> getAllUsers() async {
   }
 }
 
+Future<List<String>> getAllEmails() async {
+  try {
+    // Firestore query to get all users
+    QuerySnapshot userQuerySnapshot = await FirebaseFirestore.instance.collection('Users').get();
+
+    // Map each document snapshot to an email string and return a list of emails
+    List<String> emails = userQuerySnapshot.docs.map((doc) => doc['email'] as String? ?? '').toList();
+
+    return emails; // Return the list of emails
+  } catch (e) {
+    print('Error fetching all emails: $e');
+    return []; // Return an empty list in case of an error
+  }
+}
+
 

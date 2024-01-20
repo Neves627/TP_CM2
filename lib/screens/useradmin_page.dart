@@ -123,7 +123,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Lista de Usuários',
                                   style: TextStyle(
                                     fontSize: 20.0,
@@ -131,29 +131,30 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                                   ),
                                 ),
                                 SizedBox(height: 10.0),
-                                FutureBuilder<List<String>>(
-                                  future: getAllUserNames(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return CircularProgressIndicator();
-                                    } else if (snapshot.hasError) {
-                                      return Text('Error loading user names: ${snapshot.error}');
-                                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                                      return Text('No users found.');
-                                    } else {
-                                      // Use ListView.builder to display the list of user names
-                                      return ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount: snapshot.data!.length,
-                                        itemBuilder: (context, index) {
-                                          return ListTile(
-                                            title: Text('Nome: ${snapshot.data![index]}'),
-                                          );
-                                        },
-                                      );
-                                    }
-                                  },
-                                ),
+                                FutureBuilder<List<User>>(
+                                future: getAllUsers(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return Text('Error loading users: ${snapshot.error}');
+                                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                    return Text('No users found.');
+                                  } else {
+                                    return ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: snapshot.data!.length,
+                                      itemBuilder: (context, index) {
+                                        User user = snapshot.data![index];
+                                        return ListTile(
+                                          title: Text('Nome: ${user.nome}'),
+                                          subtitle: Text('Email: ${user.email}'),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+                              ),
                               ],
                             ),
                           ),
