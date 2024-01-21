@@ -1,6 +1,7 @@
 import 'package:aplicacao/screens/data/teams.dart';
 import 'package:aplicacao/screens/data/user.dart';
 import 'package:aplicacao/screens/registro.dart';
+import 'package:aplicacao/screens/widgets/customdrawer.dart';
 import 'package:flutter/material.dart';
 
 class UserProfilePage extends StatefulWidget {
@@ -55,6 +56,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ),
         ],
       ),
+      drawer: const CustomDrawer(),
       body: FutureBuilder<User?>(
         future: userinfo,
         builder: (context, snapshot) {
@@ -204,6 +206,9 @@ void _showEditUserPopup(BuildContext context, User user) {
                 // Valid email format, proceed with saving changes
                 await updateUserInCollection(user.id, user.nome, user.email);
 
+                Navigator.of(context).pop(); // Close the edit dialog
+
+                // Reopen UserProfilePage by popping the current route and pushing a new instance
                 Navigator.of(context).pop();
                 Navigator.push(
                   context,
@@ -223,7 +228,6 @@ void _showEditUserPopup(BuildContext context, User user) {
     },
   );
 }
-
  void _showPopupemail(BuildContext context) {
     showDialog(
       context: context,

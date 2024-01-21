@@ -22,24 +22,45 @@ Future<void> signInWithEmailAndPassword({
 }
 
 Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-    void Function(bool emailAlreadyInUse)? onEmailAlreadyInUse,
-  }) async {
-    try {
-      await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use' && onEmailAlreadyInUse != null) {
-        onEmailAlreadyInUse(true);
-      } else {
-        print("Firebase Authentication Error: $e");
-        throw e;
-      }
+  required String email,
+  required String password,
+  void Function(bool emailAlreadyInUse)? onEmailAlreadyInUse,
+}) async {
+  try {
+    // Create a user in Firebase Authentication
+    UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    // Access the UID of the newly created user
+    String uid = userCredential.user?.uid ?? '';
+
+    // Add a new document to Firestore
+    await FirebaseFirestore.instance.collection('Users').doc(uid).set({
+      'email': email,
+      'id': uid,
+      'name': '',
+      'team': '',
+      'adm': 0,
+      'vitorias': 0,
+      'derrotas': 0,
+      'lane': '',
+      'nJogos': 0,
+    });
+
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'email-already-in-use' && onEmailAlreadyInUse != null) {
+      onEmailAlreadyInUse(true);
+    } else {
+      print("Firebase Authentication Error: $e");
+      throw e;
     }
+  } catch (e) {
+    print("Error creating user and adding document to Firestore: $e");
+    throw e;
   }
+}
 
   static Future<String?> getLoggedInUserId() async {
     try {
