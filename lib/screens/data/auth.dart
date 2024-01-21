@@ -36,6 +36,9 @@ Future<void> createUserWithEmailAndPassword({
     // Access the UID of the newly created user
     String uid = userCredential.user?.uid ?? '';
 
+    // Send email verification
+    await sendEmailVerification();
+
     // Add a new document to Firestore
     await FirebaseFirestore.instance.collection('Users').doc(uid).set({
       'email': email,
@@ -58,6 +61,19 @@ Future<void> createUserWithEmailAndPassword({
     }
   } catch (e) {
     print("Error creating user and adding document to Firestore: $e");
+    throw e;
+  }
+}
+
+Future<void> sendEmailVerification() async {
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  } catch (e) {
+    print("Error sending email verification: $e");
     throw e;
   }
 }

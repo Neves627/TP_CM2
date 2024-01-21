@@ -85,7 +85,7 @@ Future<void> updateFirebaseAuthEmail(String userId, String newEmail) async {
     firebase_auth.User? currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
 
     if (currentUser != null && currentUser.uid == userId) {
-      await currentUser.updateEmail(newEmail);
+      await currentUser.verifyBeforeUpdateEmail(newEmail);
       print("Firebase Authentication: Email updated successfully");
     } else {
       print("Firebase Authentication: User not found or UID does not match");
