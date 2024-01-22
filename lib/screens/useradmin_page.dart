@@ -253,31 +253,29 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
 void _removeUser(BuildContext context, String userEmail) async {
   try {
-    // Get all users from the database
+    //Recolhe todos os os users para o allUsers
     List<User>? allUsers = await getAllUsers();
 
     if (allUsers != null) {
-      // Retrieve the user to be removed from Firestore
+      // Receve o user que vai ser removido
       User? userToRemove = allUsers.firstWhere(
         (user) => user.email == userEmail,
       );
 
       if (userToRemove != null) {
-        // Delete the user from Firestore
+        // Apaga o user na base de dados
         await deleteUserInDatabase(userToRemove.id);
 
-        // Delete the user authentication account
+        // Apaga o user na authenticação
         await removeAuthenticationByEmail(userEmail);
 
-        // Show a snackbar indicating success
+        // Snackbar que mostra sucesso
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Usuário removido com sucesso!'),
             duration: Duration(seconds: 2),
           ),
-        );
-
-        // Push a new instance of AdminProfilePage to refresh the page
+        );        
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -293,7 +291,6 @@ void _removeUser(BuildContext context, String userEmail) async {
         );
       }
     } else {
-      // Handle the case when fetching all users returns null
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Erro ao pesquisar pelo usuário'),

@@ -54,7 +54,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
             const SizedBox(height: 16.0),
             const Text(
-              'Oportunidade única para participar em torneios emocionantes.',
+              'Oportunidade única de vencer',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16.0,
@@ -72,10 +72,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
             const SizedBox(height: 8.0),
             const Text(
-              'Os Opportunity utlizam o formato Swiss é um método utilizado para realizar torneios em que os participantes '
+              'No Opportunity utilizamos o formato Swiss que é um método usado para realizar torneios em que os participantes '
               'não são eliminados após cada rodada. Em vez disso, os jogadores ou equipes são selecionados '
               'contra oponentes com desempenhos semelhantes a cada rodada. Isso proporciona uma experiência '
-              'mais equilibrada e justa, permitindo que todos joguem várias rodadas, independentemente dos resultados anteriores.',
+              'mais equilibrada e justa, permitindo que todos joguem vários jogos, independentemente dos resultados anteriores.',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16.0,

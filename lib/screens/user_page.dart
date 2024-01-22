@@ -37,7 +37,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         actions: [
           ElevatedButton(
             onPressed: () async {
-              // Fetch user data again if needed
               User? updatedUserData = await getUser();
               setState(() {
                 userinfo = Future.value(updatedUserData);
@@ -92,7 +91,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Informações do utilizador',
+                              'Informações do User',
                               style: TextStyle(
                                 fontSize: 20.0,
                                 fontWeight: FontWeight.bold,
@@ -114,7 +113,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                     SizedBox(height: 20.0),
-                    // New Container for Player Info
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -126,7 +124,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Informações do jogador',
+                              'Informações do Jogador',
                               style: TextStyle(
                                 fontSize: 20.0,
                                 fontWeight: FontWeight.bold,
@@ -164,7 +162,7 @@ void _showEditUserPopup(BuildContext context, User user) {
   String inome = user.nome;
   String iemail = user.email;
 
-  // Regular expression for a valid email format
+  // Limitações para o e-mail
   final emailRegex = RegExp(
     r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$',
   );
@@ -189,11 +187,9 @@ void _showEditUserPopup(BuildContext context, User user) {
               decoration: const InputDecoration(labelText: 'Email'),
               onChanged: (value) {
                 if (emailRegex.hasMatch(value)) {
-                  // Valid email format
                   user.email = value;
                 } else {
-                  // Invalid email format
-                  // You can show an error message or disable the "Salvar" button
+                  _showPopupemail(context);
                 }
               },
             ),
@@ -202,13 +198,18 @@ void _showEditUserPopup(BuildContext context, User user) {
         actions: <Widget>[
           TextButton(
             onPressed: () async {
+              user.nome = inome;
+              user.email = iemail;
+              Navigator.of(context).pop();
+            },
+            child: Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
               if (emailRegex.hasMatch(user.email)) {
-                // Valid email format, proceed with saving changes
                 await updateUserInCollection(user.id, user.nome, user.email);
 
-                Navigator.of(context).pop(); // Close the edit dialog
-
-                // Reopen UserProfilePage by popping the current route and pushing a new instance
+                Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 Navigator.push(
                   context,
@@ -218,7 +219,6 @@ void _showEditUserPopup(BuildContext context, User user) {
                 );
               } else {
                 _showPopupemail(context);
-                print('Invalid email format');
               }
             },
             child: Text('Salvar'),
@@ -228,6 +228,7 @@ void _showEditUserPopup(BuildContext context, User user) {
     },
   );
 }
+
  void _showPopupemail(BuildContext context) {
     showDialog(
       context: context,
@@ -250,7 +251,8 @@ void _showEditUserPopup(BuildContext context, User user) {
 
 void _showEditOppPopup(BuildContext context, User user, String userId) async {
   String ilane = user.lane;
-  List<Team> teams = await getAllTeams(); // Fetch teams
+  String iequipa = user.equipa;
+  List<Team> teams = await getAllTeams(); 
 
   // ignore: use_build_context_synchronously
   showDialog(
@@ -278,7 +280,6 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
                       setState(() {
                         user.lane = value ?? '';
                       });
-                      updateUserLane(userId, user.lane);
                     },
                   ),
                 ),
@@ -298,8 +299,6 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
                       setState(() {
                         user.equipa = teams[index].name;
                       });
-                      // Save the updated user information here
-                      updateUserTeam(userId, user.equipa);
                     },
                   ),
                 ),
@@ -311,21 +310,25 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
                 onPressed: () {
                   setState(() {
                     user.lane = ilane;
+                    user.equipa = iequipa;
                   });
                   Navigator.of(context).pop();
                 },
                 child: const Text('Cancelar'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
+                 
+                  await updateUserLane(userId, user.lane);
+                  await updateUserTeam(userId, user.equipa);
+
                   Navigator.of(context).pop();
-                
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return UserProfilePage(userId: user.id);
-                  }),
-                );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return UserProfilePage(userId: user.id);
+                    }),
+                  );
                 },
                 child: const Text('Salvar'),
               ),
