@@ -171,6 +171,7 @@ class LoginPage extends StatelessWidget {
                       }
                     }
 
+//Mostra o pop-up se os campos não tiverem todos preenchidos
 void _showPopupemptylogin(BuildContext context) {
     showDialog(
       context: context,
@@ -191,6 +192,7 @@ void _showPopupemptylogin(BuildContext context) {
     );
   }
 
+  //Mostra o pop-up de email invalido
   void _showPopupemail(BuildContext context) {
     showDialog(
       context: context,
@@ -211,6 +213,7 @@ void _showPopupemptylogin(BuildContext context) {
     );
   }
 
+  //Mosta pop-up de conta invalida
   void _showPopupnoacc(BuildContext context) {
     showDialog(
       context: context,

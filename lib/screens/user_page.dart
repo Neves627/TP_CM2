@@ -158,6 +158,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+//Edit das informções da conta do utilizador
 void _showEditUserPopup(BuildContext context, User user) {
   String inome = user.nome;
   String iemail = user.email;
@@ -229,6 +230,7 @@ void _showEditUserPopup(BuildContext context, User user) {
   );
 }
 
+//Pop up de e-mail invalido
  void _showPopupemail(BuildContext context) {
     showDialog(
       context: context,
@@ -249,6 +251,8 @@ void _showEditUserPopup(BuildContext context, User user) {
     );
   }
 
+
+//Editar informações do jogador
 void _showEditOppPopup(BuildContext context, User user, String userId) async {
   String ilane = user.lane;
   String iequipa = user.equipa;
@@ -340,11 +344,11 @@ void _showEditOppPopup(BuildContext context, User user, String userId) async {
   );
 }
 
+//Confirmação de delete
 void _showDeleteConfirmation(BuildContext context, Future<User?> userFuture, String userId) async {
-  // Fetch the user data
+  // Recebe o user
   User? user = await userFuture;
 
-  // Check if user is not null
   if (user != null) {
     // ignore: use_build_context_synchronously
     bool deleteConfirmed = await showDialog(
@@ -356,19 +360,19 @@ void _showDeleteConfirmation(BuildContext context, Future<User?> userFuture, Str
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(false); // Cancel the delete operation
+                Navigator.of(context).pop(false);
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
-                // Step 1: Delete User Data in the Database
-                await deleteUserInDatabase(userId);  // Use the provided userId parameter
+                
+                await deleteUserInDatabase(userId); 
 
-                // Step 2: Delete User Authentication Account
+                
                 await deleteUserAuthentication(user.email);
 
-                Navigator.of(context).pop(true); // Confirm the delete operation
+                Navigator.of(context).pop(true);
               },
               style: TextButton.styleFrom(
                 primary: Colors.red,
@@ -380,12 +384,11 @@ void _showDeleteConfirmation(BuildContext context, Future<User?> userFuture, Str
       },
     );
 
-    // Check if the user confirmed the delete operation
+   
     if (deleteConfirmed == true) {
-      // Close the current screen and navigate to the desired screen
-      Navigator.of(context).pop(); // Close current screen
+     
+      Navigator.of(context).pop();
 
-      // Navigate to the desired screen, replace 'MyStatefulWidget' with the actual class name
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -396,7 +399,7 @@ void _showDeleteConfirmation(BuildContext context, Future<User?> userFuture, Str
   }
 }
 
-
+//Cria equipa
   Future<void> _createTeam(BuildContext context, String teamName) async {
   try {
     await createTeam(teamName);

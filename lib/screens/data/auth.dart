@@ -10,7 +10,7 @@ class Auth{
 
   Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
 
-
+//Dá signin na autenticação
 Future<void> signInWithEmailAndPassword({
   required String email,
   required String password,
@@ -21,13 +21,14 @@ Future<void> signInWithEmailAndPassword({
   );
 }
 
+//Cria na autenticação uma conta
 Future<void> createUserWithEmailAndPassword({
   required String email,
   required String password,
   void Function(bool emailAlreadyInUse)? onEmailAlreadyInUse,
 }) async {
   try {
-    // Create a user in Firebase Authentication
+    
     UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -65,6 +66,7 @@ Future<void> createUserWithEmailAndPassword({
   }
 }
 
+//Manda a verificação de conta no e-mail
 Future<void> sendEmailVerification() async {
   try {
     User? user = FirebaseAuth.instance.currentUser;
@@ -78,6 +80,7 @@ Future<void> sendEmailVerification() async {
   }
 }
 
+//Ve se o user loggado tem conta na collection
   static Future<String?> getLoggedInUserId() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
@@ -90,31 +93,31 @@ Future<void> sendEmailVerification() async {
 
   Future<String?> checkUidInCollection() async {
   try {
-    // Get the current authenticated user
+   
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // Reference to the Firestore collection
+     
       CollectionReference users = FirebaseFirestore.instance.collection('Users');
 
-      // Query the collection for the user with the matching UID
+      
       QuerySnapshot querySnapshot = await users.where('id', isEqualTo: user.uid).get();
 
-      // Iterate through the documents in the QuerySnapshot
+      
       querySnapshot.docs.forEach((QueryDocumentSnapshot doc) {
       });
 
       if (querySnapshot.docs.isNotEmpty) {
-        // User with matching UID found in the collection
+        
         print('User with UID ${user.uid} found in the collection.');
-        return user.uid; // Return the user ID
+        return user.uid; 
       } else {
-        // User with matching UID not found in the collection
+        
         print('User with UID ${user.uid} not found in the collection.');
-        return null; // or return an empty string if you prefer
+        return null; 
       }
     } else {
-      // No user is currently authenticated
+
       print('No user is currently authenticated.');
       return null;
     }
@@ -123,25 +126,7 @@ Future<void> sendEmailVerification() async {
     return null;
   }
 }
-Future<List<String>> fetchStringList(String documentId) async {
-  DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-      .collection('Users')
-      .doc(documentId)
-      .get();
 
-  if (documentSnapshot.exists) {
-    // Assuming the field name is 'yourListField'
-    List<dynamic>? stringList = documentSnapshot['yourListField'];
-
-    if (stringList != null && stringList is List<String>) {
-      return stringList;
-    } else {
-      throw Exception('Invalid data structure in Firestore.');
-    }
-  } else {
-    throw Exception('Document does not exist.');
-  }
-}
 
 }
 

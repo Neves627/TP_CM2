@@ -21,6 +21,7 @@ class Team {
   }
 }
 
+//Recebe todas as equipas
 Future<List<Team>> getAllTeams() async {
   List<Team> teams = [];
 
@@ -32,7 +33,6 @@ Future<List<Team>> getAllTeams() async {
       Map<String, dynamic> data = teamDoc.data() as Map<String, dynamic>;
       print('Data for document ${teamDoc.id}: $data');
 
-      // Check if 'nome' field exists in the document data
       if (data.containsKey('nome')) {
         String name = data['nome'];
         print('Team name: $name');
@@ -54,12 +54,13 @@ void printTeams() async {
   print(teams);
 }
 
+//Cria uma equipa
 Future<void> createTeam(String teamName) async {
   try {
-    // Create a new team object
+ 
     Team newTeam = Team(name: teamName);
 
-    // Add the team to the "Teams" collection with a random document ID
+
     await FirebaseFirestore.instance.collection('Teams').doc().set({
       'nome': newTeam.name,
     });
@@ -70,17 +71,15 @@ Future<void> createTeam(String teamName) async {
   }
 }
 
+//Apaga um user na bd
 Future<void> deleteUserInDatabase(String userId) async {
   try {
-    // Query the Firestore collection to find the document with the matching 'id'
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('Users')
         .where('id', isEqualTo: userId)
         .get();
 
-    // Check if any matching documents were found
     if (querySnapshot.docs.isNotEmpty) {
-      // Delete the first matching document (assuming there's only one)
       await querySnapshot.docs.first.reference.delete();
       print('User deleted from the database');
     } else {
@@ -91,13 +90,11 @@ Future<void> deleteUserInDatabase(String userId) async {
   }
 }
 
-// Function to delete user authentication account
+// Remove o user da autenticação
 Future<void> deleteUserAuthentication(String userEmail) async {
   try {
-    // Get the current authenticated user
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email == userEmail) {
-      // User is authenticated, delete the account
       await user.delete();
     } else {
       print('Error: Current user not authenticated or email mismatch.');
@@ -107,25 +104,21 @@ Future<void> deleteUserAuthentication(String userEmail) async {
   }
 }
 
+//Remove a autenticação por email
 Future<void> removeAuthenticationByEmail(String userEmail) async {
   try {
-    print("asndakjsdnakjsdnjaksndkja $userEmail");
-
-    // Check if there are sign-in methods for the email
     List<String> methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(userEmail);
 
     if (methods.isNotEmpty) {
-      // Sign in with the email (using a dummy password)
       UserCredential authResult = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: userEmail,
-        password: '123123', // Provide a valid password
+        password: '123123', 
       );
 
       // Get the user object
       User? user = authResult.user;
 
       if (user != null) {
-        // User with specified email found, delete the account
         await user.delete();
         print('Authentication removed for user with email: $userEmail');
       } else {

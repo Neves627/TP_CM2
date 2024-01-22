@@ -309,6 +309,7 @@ void _removeUser(BuildContext context, String userEmail) async {
   }
 }
 
+  // Confirmação da remoção de equipa
   void _showRemoveTeamConfirmation(BuildContext context) {
   String teamName = '';
 
@@ -359,6 +360,7 @@ void _removeUser(BuildContext context, String userEmail) async {
   );
 }
 
+// Remove a equipa
 void _removeTeam(BuildContext context, String teamName) {
   try {
     
