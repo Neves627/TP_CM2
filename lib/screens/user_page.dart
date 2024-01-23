@@ -158,10 +158,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-//Edit das informções da conta do utilizador
 void _showEditUserPopup(BuildContext context, User user) {
   String inome = user.nome;
   String iemail = user.email;
+  String newEmail = user.email; // Variable to store the updated email
 
   // Limitações para o e-mail
   final emailRegex = RegExp(
@@ -187,11 +187,7 @@ void _showEditUserPopup(BuildContext context, User user) {
               initialValue: user.email,
               decoration: const InputDecoration(labelText: 'Email'),
               onChanged: (value) {
-                if (emailRegex.hasMatch(value)) {
-                  user.email = value;
-                } else {
-                  _showPopupemail(context);
-                }
+                newEmail = value; // Update the email when it changes
               },
             ),
           ],
@@ -207,8 +203,8 @@ void _showEditUserPopup(BuildContext context, User user) {
           ),
           TextButton(
             onPressed: () async {
-              if (emailRegex.hasMatch(user.email)) {
-                await updateUserInCollection(user.id, user.nome, user.email);
+              if (emailRegex.hasMatch(newEmail)) {
+                await updateUserInCollection(user.id, user.nome, newEmail);
 
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
@@ -229,6 +225,7 @@ void _showEditUserPopup(BuildContext context, User user) {
     },
   );
 }
+
 
 //Pop up de e-mail invalido
  void _showPopupemail(BuildContext context) {
