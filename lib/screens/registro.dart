@@ -138,7 +138,7 @@ class RegisterPage extends StatelessWidget {
                             return LoginPage();
                           }),
                         );
-                      
+                      _showPopupVerifyEmail(context);
                     },
                     child: const Text('Registar'),
                   ),
@@ -154,7 +154,27 @@ class RegisterPage extends StatelessWidget {
 
 }
 
-
+void _showPopupVerifyEmail(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirme o Email'),
+        content: const Text(
+          'Um email de verificação foi enviado para o endereço de email. Por favor, confirme a sua conta.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
 void _showPopupemptyregistro(BuildContext context) {
