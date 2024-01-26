@@ -93,31 +93,33 @@ Future<void> sendEmailVerification() async {
 
   Future<String?> checkUidInCollection() async {
   try {
-   
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-     
       CollectionReference users = FirebaseFirestore.instance.collection('Users');
 
-      
       QuerySnapshot querySnapshot = await users.where('id', isEqualTo: user.uid).get();
 
-      
-      querySnapshot.docs.forEach((QueryDocumentSnapshot doc) {
-      });
-
       if (querySnapshot.docs.isNotEmpty) {
-        
         print('User with UID ${user.uid} found in the collection.');
-        return user.uid; 
+        return user.uid;
       } else {
-        
-        print('User with UID ${user.uid} not found in the collection.');
-        return null; 
+
+        await users.doc(user.uid).set({
+          'email': user.email,
+          'id': user.uid,
+          'name': '', 
+          'team': '',
+          'adm': 0,
+          'vitorias': 0,
+          'derrotas': 0,
+          'lane': '',
+          'nJogos': 0,
+        });
+        print('User with UID ${user.uid} not found in the collection. Created a new document.');
+        return user.uid;
       }
     } else {
-
       print('No user is currently authenticated.');
       return null;
     }
