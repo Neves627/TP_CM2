@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class User {
   String id;
@@ -48,38 +49,54 @@ class User {
 }
 
 //Da update aos dados na base de dados
-Future<void> updateUserInCollection(String userId, String newName, String newEmail) async {
+Future<void> updateUserInCollection(String userId, String newName, String newEmail, BuildContext context) async {
   try {
     CollectionReference users = FirebaseFirestore.instance.collection('Users');
 
-    QuerySnapshot userQuerySnapshot = await FirebaseFirestore.instance
-        .collection('Users')
-        .where('id', isEqualTo: userId)
-        .limit(1) 
-        .get();
+    QuerySnapshot userQuerySnapshot = await users.where('id', isEqualTo: userId).limit(1).get();
 
     if (userQuerySnapshot.docs.isNotEmpty) {
-      
       QueryDocumentSnapshot userDocSnapshot = userQuerySnapshot.docs.first;
 
-     
-      await updateFirebaseAuthEmail(userId, newEmail);
+      // Retrieve current user's email
+      String currentUserEmail = userDocSnapshot['email'];
 
-     
+      // Update name regardless of email change
       await users.doc(userDocSnapshot.id).update({
         'nome': newName,
-        'email': newEmail,
       });
 
-      print("Alterado com sucesso");
+      if (currentUserEmail != newEmail) {
+        List<String> methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(newEmail);
+
+        QuerySnapshot emailQuerySnapshot = await users.where('email', isEqualTo: newEmail).limit(1).get();
+
+        if (methods.isNotEmpty || emailQuerySnapshot.docs.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('O email já está em uso.'),
+            ),
+          );
+        } else {
+          await updateFirebaseAuthEmail(userId, newEmail);
+
+          await users.doc(userDocSnapshot.id).update({
+            'email': newEmail,
+          });
+
+          print("Alterado com sucesso");
+        }
+      } else {
+        print("O novo email é o mesmo que o atual.");
+      }
     } else {
-      
-      print('User with ID $userId not found in Firestore.');
+      print('Usuário com ID $userId não encontrado no Firestore.');
     }
   } catch (e) {
-    print('Error updating user data: $e');
+    print('Erro ao atualizar os dados do usuário: $e');
   }
 }
+
 
 //da update ao e-mail da autenticação
 Future<void> updateFirebaseAuthEmail(String userId, String newEmail) async {
@@ -87,8 +104,17 @@ Future<void> updateFirebaseAuthEmail(String userId, String newEmail) async {
     firebase_auth.User? currentUser = firebase_auth.FirebaseAuth.instance.currentUser;
 
     if (currentUser != null && currentUser.uid == userId) {
-      await currentUser.verifyBeforeUpdateEmail(newEmail);
-      print("Firebase Authentication: Email updated successfully");
+      
+      List<String> methods = await firebase_auth.FirebaseAuth.instance.fetchSignInMethodsForEmail(newEmail);
+
+      if (methods.isNotEmpty) {
+        print("The new email is already in use.");
+        
+      } else {
+        
+        await currentUser.verifyBeforeUpdateEmail(newEmail);
+        print("Firebase Authentication: Email updated successfully");
+      }
     } else {
       print("Firebase Authentication: User not found or UID does not match");
     }

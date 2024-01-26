@@ -34,13 +34,13 @@ Future<void> createUserWithEmailAndPassword({
       password: password,
     );
 
-    // Access the UID of the newly created user
+    
     String uid = userCredential.user?.uid ?? '';
 
-    // Send email verification
+   
     await sendEmailVerification();
 
-    // Add a new document to Firestore
+   
     await FirebaseFirestore.instance.collection('Users').doc(uid).set({
       'email': email,
       'id': uid,

@@ -187,7 +187,7 @@ void _showEditUserPopup(BuildContext context, User user) {
               initialValue: user.email,
               decoration: const InputDecoration(labelText: 'Email'),
               onChanged: (value) {
-                newEmail = value; // Update the email when it changes
+                newEmail = value; 
               },
             ),
           ],
@@ -204,7 +204,7 @@ void _showEditUserPopup(BuildContext context, User user) {
           TextButton(
             onPressed: () async {
               if (emailRegex.hasMatch(newEmail)) {
-                await updateUserInCollection(user.id, user.nome, newEmail);
+                await updateUserInCollection(user.id, user.nome, newEmail, context);
 
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
@@ -247,6 +247,8 @@ void _showEditUserPopup(BuildContext context, User user) {
       },
     );
   }
+
+
 
 
 //Editar informações do jogador
